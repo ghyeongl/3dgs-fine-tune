@@ -22,6 +22,7 @@ from tqdm import tqdm
 from utils.image_utils import psnr
 from argparse import ArgumentParser, Namespace
 from arguments import ModelParams, PipelineParams, OptimizationParams
+import logger
 try:
     from torch.utils.tensorboard import SummaryWriter
     TENSORBOARD_FOUND = True
@@ -40,6 +41,14 @@ try:
 except:
     SPARSE_ADAM_AVAILABLE = False
 
+# 1. 데이터셋
+# 2. 옵션 (학습 관련 파라미터, learning rate, iteration 등)
+# 3. 파이프라인 (SH 계산 여부, debug 모드 등)
+# 4. 특정 Iteration 마다 테스트하는 구간
+# 5. 특정 Iteration 마다 모델(가우시안) 저장
+# 6. 체크포인트를 남길 Iteration 리스트
+# 7. 체크포인트(중간 저장된) 경로
+# 8. 디버그 시작 Iteration
 def training(dataset, opt, pipe, testing_iterations, saving_iterations, checkpoint_iterations, checkpoint, debug_from):
 
     if not SPARSE_ADAM_AVAILABLE and opt.optimizer_type == "sparse_adam":
@@ -279,6 +288,7 @@ if __name__ == "__main__":
     if not args.disable_viewer:
         network_gui.init(args.ip, args.port)
     torch.autograd.set_detect_anomaly(args.detect_anomaly)
+    
     training(lp.extract(args), op.extract(args), pp.extract(args), args.test_iterations, args.save_iterations, args.checkpoint_iterations, args.start_checkpoint, args.debug_from)
 
     # All done

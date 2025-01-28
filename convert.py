@@ -23,6 +23,8 @@ parser.add_argument("--camera", default="OPENCV", type=str)
 parser.add_argument("--colmap_executable", default="", type=str)
 parser.add_argument("--resize", action="store_true")
 parser.add_argument("--magick_executable", default="", type=str)
+parser.add_argument("--num_threads", type=int, default=0,
+                    help="Number of CPU threads to use. 0 means let COLMAP choose.")
 args = parser.parse_args()
 colmap_command = '"{}"'.format(args.colmap_executable) if len(args.colmap_executable) > 0 else "colmap"
 magick_command = '"{}"'.format(args.magick_executable) if len(args.magick_executable) > 0 else "magick"
@@ -38,6 +40,8 @@ if not args.skip_matching:
         --ImageReader.single_camera 1 \
         --ImageReader.camera_model " + args.camera + " \
         --SiftExtraction.use_gpu " + str(use_gpu)
+    if args.num_threads > 0:
+        feat_extracton_cmd += f" --SiftExtraction.num_threads {args.num_threads}"
     exit_code = os.system(feat_extracton_cmd)
     if exit_code != 0:
         logging.error(f"Feature extraction failed with code {exit_code}. Exiting.")
@@ -47,6 +51,8 @@ if not args.skip_matching:
     feat_matching_cmd = colmap_command + " exhaustive_matcher \
         --database_path " + args.source_path + "/distorted/database.db \
         --SiftMatching.use_gpu " + str(use_gpu)
+    if args.num_threads > 0:
+        feat_matching_cmd += f" --SiftMatching.num_threads {args.num_threads}"
     exit_code = os.system(feat_matching_cmd)
     if exit_code != 0:
         logging.error(f"Feature matching failed with code {exit_code}. Exiting.")
@@ -60,6 +66,8 @@ if not args.skip_matching:
         --image_path "  + args.source_path + "/input \
         --output_path "  + args.source_path + "/distorted/sparse \
         --Mapper.ba_global_function_tolerance=0.000001")
+    if args.num_threads > 0:
+        mapper_cmd += f" --Mapper.num_threads {args.num_threads}"
     exit_code = os.system(mapper_cmd)
     if exit_code != 0:
         logging.error(f"Mapper failed with code {exit_code}. Exiting.")
