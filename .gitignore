@@ -14,5 +14,4 @@ __pycache__
 .env
 .idea
 dataset
-tandt_db
-submodules/simple-knn
+colmap

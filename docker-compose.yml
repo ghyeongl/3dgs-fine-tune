@@ -1,0 +1,22 @@
+services:
+  colmap:
+    build: .
+    container_name: colmap_container
+    # GPU 자원을 컨테이너에 할당
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+    # 호스트의 현재 디렉토리를 /workspace 로 마운트
+    volumes:
+      - .:/workspace
+
+    # 작업 디렉토리를 /workspace 로 설정
+    working_dir: /workspace
+
+    tty: true
+    stdin_open: true
